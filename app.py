@@ -1,6 +1,7 @@
-
+import streamlit as st
 import joblib
 import numpy as np
+import pandas as pd
 
 # Load the files
 model = joblib.load('disease_model.pkl')
