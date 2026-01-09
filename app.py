@@ -30,24 +30,9 @@ if st.button("Run Diagnosis"):
     
     st.link_button(f"Contact {specialist} regarding {result}", form_link)
 
-# --- SPECIALIST DIRECTORY SECTION ---
-st.markdown("---") # This adds a horizontal line to separate sections
-st.header("🏢 Specialist Contact Directory")
-st.write("If you already have a diagnosis, find the correct department below:")
-
-# We create a dictionary (list) of the contact info
-directory_data = {
-    "Specialty": ["Dermatology", "Cardiology", "Endocrinology", "Neurology", "Gastroenterology"],
-    "Clinic Name": ["Skin Health Center", "Heart & Vascular Inst.", "Metabolic Care Unit", "Neuro-Science Hub", "Digestive Health Clinic"],
-    "Contact Info": ["555-0101", "555-0202", "555-0303", "555-0404", "555-0505"],
-    "Email": ["skin@healthlink.com", "heart@healthlink.com", "endo@healthlink.com", "neuro@healthlink.com", "gi@healthlink.com"]
-}
-
-# This displays it as a beautiful, searchable table
-st.table(directory_data)
 
 # 1. Your Base Form Link (replace with yours)
-base_form_url = "https://forms.gle/FpaSwB9gvSEydsDq9"
+base_form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
 
 # 2. Add the links to your data
 directory_data = {
