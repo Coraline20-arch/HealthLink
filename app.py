@@ -15,6 +15,8 @@ st.write("Select symptoms to see what the AI thinks.")
 options = st.multiselect("What are your symptoms?", list(symptoms))
 
 if st.button("Run Diagnosis"):
+    # Create a link button to your Google Form
+st.link_button("📋 Fill out Appointment Request Form", "https://forms.gle/TuHiwJz634roBahN8")
     # Prepare the data for the model
     input_data = np.zeros(len(symptoms))
     for s in options:
@@ -25,3 +27,19 @@ if st.button("Run Diagnosis"):
     # Make the prediction
     prediction = model.predict([input_data])
     st.header(f"Result: {prediction[0]}")
+
+# --- SPECIALIST DIRECTORY SECTION ---
+st.markdown("---") # This adds a horizontal line to separate sections
+st.header("🏢 Specialist Contact Directory")
+st.write("If you already have a diagnosis, find the correct department below:")
+
+# We create a dictionary (list) of the contact info
+directory_data = {
+    "Specialty": ["Dermatology", "Cardiology", "Endocrinology", "Neurology", "Gastroenterology"],
+    "Clinic Name": ["Skin Health Center", "Heart & Vascular Inst.", "Metabolic Care Unit", "Neuro-Science Hub", "Digestive Health Clinic"],
+    "Contact Info": ["555-0101", "555-0202", "555-0303", "555-0404", "555-0505"],
+    "Email": ["skin@healthlink.com", "heart@healthlink.com", "endo@healthlink.com", "neuro@healthlink.com", "gi@healthlink.com"]
+}
+
+# This displays it as a beautiful, searchable table
+st.table(directory_data)
