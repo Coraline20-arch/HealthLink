@@ -8,7 +8,8 @@ model = joblib.load('disease_model.pkl')
 symptoms = joblib.load('symptoms_list.pkl')
 
 st.set_page_config(page_title="Disease Predictor", page_icon="🩺")
-st.title("🩺 AI Disease Prediction")
+st.title("🩺 HealthLink")
+st.write("HealthLink AI is a machine-learning powered diagnostic tool designed to bridge the gap between symptooms and professional care. By analyzing user-reported data through a Random Forest algorithm, the app provides instant health insights and connects users directly to the correct medical specialists.")
 st.write("Select symptoms to see what the AI thinks.")
 
 # Create the selection box
@@ -16,7 +17,7 @@ options = st.multiselect("What are your symptoms?", list(symptoms))
 
 if st.button("Run Diagnosis"):
     # Create a link button to your Google Form
-st.link_button("📋 Fill out Appointment Request Form", "https://forms.gle/TuHiwJz634roBahN8")
+    st.link_button("📋 Fill out Appointment Request Form", "https://forms.gle/TuHiwJz634roBahN8")
     # Prepare the data for the model
     input_data = np.zeros(len(symptoms))
     for s in options:
