@@ -53,4 +53,4 @@ if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
     if password == "4421": # Simple code for the fair
         st.sidebar.success("Access Granted")
-        st.sidebar.link_button("View Patient Queue", "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID")
+        st.sidebar.link_button("View Patient Queue (not working rn)", "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID")
