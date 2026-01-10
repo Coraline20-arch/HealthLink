@@ -34,23 +34,10 @@ if st.button("Run Diagnosis"):
 # 1. Your Base Form Link (replace with yours)
 base_form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
 
-# 2. Add the links to your data
-directory_data = {
-    "Specialty": ["Dermatology", "Cardiology", "Endocrinology"],
-    "Clinic Name": ["Skin Health Center", "Heart Institute", "Metabolic Care"],
-    # We create a link for each row that "pre-fills" the specialty in the form
-    "Action": [
-        f"[Book Dermatology]({base_form_url}Dermatology)",
-        f"[Book Cardiology]({base_form_url}Cardiology)",
-        f"[Book Endocrinology]({base_form_url}Endocrinology)"
-    ]
-}
-
-st.table(directory_data)
 
 # Add this to your sidebar for the "Doctor's view"
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
     if password == "4421": # Simple code for the fair
         st.sidebar.success("Access Granted")
-        st.sidebar.link_button("View Patient Queue (not working rn)", "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID")
+        st.sidebar.link_button("View Patient Queue", "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=drivesdk")
