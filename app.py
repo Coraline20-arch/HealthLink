@@ -7,17 +7,9 @@ import pandas as pd
 # 1. Page Config must stay at the very top
 st.set_page_config(page_title="HealthLinkAI", page_icon="🩺")
 
-# 2. Background Color Fix
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background-color: #FFFFFF;
-    }
-    </style>
-    """,
-    unsafe_allow_code=True
-)
+# 2. Simplified Background Code
+# Make sure there are no spaces before 'st.markdown'
+st.markdown("<style>.stApp {background-color: #F0F8FF;}</style>", unsafe_allow_code=True)
 
 # 2. Load the files
 model = joblib.load('disease_model.pkl')
