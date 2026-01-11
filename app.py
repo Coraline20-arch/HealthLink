@@ -4,13 +4,15 @@ import numpy as np
 import pandas as pd
 
 # 1. Page Configuration (MUST be at the top)
-st.set_page_config(page_title="HealthLink AI", page_icon="🩺")
+# 1. Page Config must stay at the very top
+st.set_page_config(page_title="HealthLinkAI", page_icon="🩺")
 
+# 2. Background Color Fix
 st.markdown(
     """
     <style>
     .stApp {
-        background-color: #ffffff; /* White */
+        background-color: #FFFFFF;
     }
     </style>
     """,
