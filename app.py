@@ -43,6 +43,11 @@ if st.button("Run Diagnosis"):
     form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
     st.link_button("📋 Book Appointment for this Result", form_url)
 
+st.sidebar.error("🆘 **EMERGENCY?**")
+if st.sidebar.button("Find Nearest Hospital"):
+    # This opens Google Maps to search for hospitals near the user
+    st.sidebar.link_button("📍 Open Hospital Map", "https://www.google.com/maps/search/hospital+near+me")
+
 # "Doctor's view"
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
