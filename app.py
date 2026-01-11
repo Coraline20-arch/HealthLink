@@ -6,6 +6,17 @@ import pandas as pd
 # 1. Page Configuration (MUST be at the top)
 st.set_page_config(page_title="HealthLink AI", page_icon="🩺")
 
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-color: #ffffff; /* White */
+    }
+    </style>
+    """,
+    unsafe_allow_code=True
+)
+
 # 2. Load the files
 model = joblib.load('disease_model.pkl')
 symptoms_list = joblib.load('symptoms_list.pkl')
