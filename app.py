@@ -34,10 +34,9 @@ if st.button("Run Diagnosis"):
     # Show the result
     st.success(f"### Predicted Condition: {result}")
     
-    # Pre-filled Form Link
-    # Note: Replace 'entry.123' with your actual Google Form entry ID
-    form_url = f"https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
-    st.link_button("📋 Book Appointment for this Result", form_url)
+    # Pre-filled Form Link# Replace 'entry.1234567' with your actual ID number
+form_url = f"https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=pp_url&entry.1205841980{result.replace(' ', '+')}"
+st.link_button("📋 Book Appointment for this Result", form_url)
 
 # 6. Specialist Portal (Sidebar)
 st.sidebar.markdown("---")
