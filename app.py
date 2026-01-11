@@ -7,9 +7,6 @@ import time
 # 1. Page Configuration (MUST be the very first Streamlit command)
 st.set_page_config(page_title="Disease Predictor", page_icon="🩺")
 
-# 2. Background Color (One-line version to avoid SyntaxErrors)
-st.markdown("<style>.stApp {background-color: #F0F8FF;}</style>", unsafe_allow_code=True)
-
 # 3. Load the AI files
 model = joblib.load('disease_model.pkl')
 symptoms_list = joblib.load('symptoms_list.pkl')
