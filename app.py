@@ -41,7 +41,7 @@ if st.button("Run Diagnosis"):
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
     if password == "4421": # Your Code
-        st.sidebar.success("Access Granted")
+        st.sidebar.success("Access Granted  'When opening, please right-click and click on Open Link in a New Tab'.")
         
         # Use st.link_button instead of st.button
         st.sidebar.link_button(
