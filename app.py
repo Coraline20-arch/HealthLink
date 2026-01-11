@@ -3,9 +3,9 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# Load the files
+# Database Files
 model = joblib.load('disease_model.pkl')
-symptoms = joblib.load('symptoms_list.pkl')
+symptoms_list = joblib.load('symptoms_list.pkl')
 
 st.set_page_config(page_title="Disease Predictor", page_icon="🩺")
 st.title("🩺 HealthLink")
@@ -13,33 +13,32 @@ st.write("HealthLink AI is a machine-learning powered diagnostic tool designed t
 st.write("This webapp is a science fair project by 10th Grade Students (Chisom and Mesooma Obi).")
 st.write("Select symptoms to see what the AI thinks.")
 
-# ... (your imports and file loading at the top)
 
-# 1. Create the selection box
+# Selection box
 options = st.multiselect("What are your symptoms?", list(symptoms_list))
 
-# 2. ONLY run this logic when the button is clicked
+# Results after button is clicked on
 if st.button("Run Diagnosis"):
-    # Prepare the data
+    # Data prep
     input_data = np.zeros(len(symptoms_list))
     for s in options:
         index = list(symptoms_list).index(s)
         input_data[index] = 1
     
-    # Run the model
+    # Testing
     prediction = model.predict(input_data.reshape(1, -1))
     
-    # NOW define the result (This fixes the NameError!)
+    # Training
     result = prediction[0]
     
-    # Show the result to the user
+    # Displayed Result
     st.success(f"### Predicted Condition: {result}")
     
-    # Show the link to the specialist form
+    # Specialist link button
     form_url = f"https://docs.google.com/forms/d/e/YOUR_ID/viewform?entry.123={result.replace(' ', '+')}"
     st.link_button("📋 Book Appointment for this Result", form_url)
 
-# "Doctor's view"
+# Doctor's view
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
     if password == "4421": # Password
