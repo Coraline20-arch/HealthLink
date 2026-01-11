@@ -32,13 +32,13 @@ if st.button("Run Diagnosis"):
     result = prediction[0]
     
     # Show the result
-    st.success(f"### Predicted Condition: {result}"
+    st.success(f"### Predicted Condition: {result}")
 urgent_diseases = ['Heart attack', 'Stroke', 'Malaria', 'Typhoid']
 
 if result in urgent_diseases:
     st.error("🚨 **High Priority:** Please seek immediate medical attention.")
 else:
-    st.info("🟢 **Standard Priority:** Follow up with a specialist via the form below."))
+    st.info("🟢 **Standard Priority:** Follow up with a specialist via the form below.")
     
     form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
     st.link_button("📋 Book Appointment for this Result", form_url)
