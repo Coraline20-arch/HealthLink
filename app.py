@@ -37,10 +37,14 @@ if st.button("Run Diagnosis"):
     form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
     st.link_button("📋 Book Appointment for this Result", form_url)
 
-# 6. Specialist Portal (Sidebar)
-st.sidebar.markdown("---")
+# "Doctor's view"
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
-    if password == "4421":
+    if password == "4421": # Your Code
         st.sidebar.success("Access Granted")
-        st.sidebar.link_button("View Patient Queue", "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=drivesdk")
+        
+        # Use st.link_button instead of st.button
+        st.sidebar.link_button(
+            "📂 View Patient Queue", 
+            "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=sharing"
+        )
