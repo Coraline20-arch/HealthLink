@@ -21,16 +21,22 @@ options = st.multiselect("What are your symptoms?", list(symptoms_list))
 
 # 5. Diagnosis Logic (Everything must stay inside this 'if' block)
 if st.button("Run Diagnosis"):
-    # Prepare the data
-    input_data = np.zeros(len(symptoms_list))
-    for s in options:
-        index = list(symptoms_list).index(s)
-        input_data[index] = 1
-    
-    # Prediction Code
-    prediction = model.predict(input_data.reshape(1, -1))
-    result = prediction[0]
-    
+    # Loading Screen
+    with st.spinner("Clarity in every heartbeat.."):
+        # Put a tiny sleep timer here so the user can actually see the message
+        import time
+        time.sleep(1.5) 
+        
+        # All your existing code goes inside this block:
+        input_data = np.zeros(len(symptoms_list))
+        for s in options:
+            index = list(symptoms_list).index(s)
+            input_data[index] = 1
+        
+        prediction = model.predict(input_data.reshape(1, -1))
+        result = prediction[0]
+
+    # The spinner disappears here, and the result pops up!
     st.success(f"### Predicted Condition: {result}")
     
     # Traige
