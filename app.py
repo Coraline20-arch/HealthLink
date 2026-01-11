@@ -35,7 +35,7 @@ if st.button("Run Diagnosis"):
     st.success(f"### Predicted Condition: {result}")
     
     # Specialist link button
-    form_url = f"https://docs.google.com/forms/d/e/YOUR_ID/viewform?entry.123={result.replace(' ', '+')}"
+    form_url = f"https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header{result.replace(' ', '+')}"
     st.link_button("📋 Book Appointment for this Result", form_url)
 
 # Doctor's view
