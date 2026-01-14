@@ -92,7 +92,7 @@ if st.session_state.page == "home":
         st.write("Access the secure patient queue and dashboard.")
         password = st.text_input("Enter Admin Code", type="password")
         if password == "4421":
-            st.success("Access Granted")
+            st.success("Access Granted [When opening the queue, right click and 'Open in a new tab'.")
             st.link_button("📂 Open Patient Queue", "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=sharing", use_container_width=True)
 
 # --- VIEW 2: THE DIAGNOSTICS APP ---
