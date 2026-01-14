@@ -7,9 +7,6 @@ import time
 # 1. Page Configuration
 st.set_page_config(page_title="HealthLink AI", page_icon="🩺")
 
-# 2. Fancy Accessory: Background Color
-st.markdown("<style>.stApp {background-color: #F0F8FF;}</style>", unsafe_allow_code=True)
-
 # 3. Load the AI files
 model = joblib.load('disease_model.pkl')
 symptoms_list = joblib.load('symptoms_list.pkl')
