@@ -20,14 +20,8 @@ st.markdown("""
             color: black !important;
         }
 
-        /* --- THE ARROW FIX --- */
-        /* Targets the sidebar toggle arrow/chevron and makes it white */
-        [data-testid="stSidebarCollapseButton"] svg {
-            fill: white !important;
-        }
-        
-        /* Targets the 'Open Sidebar' arrow when sidebar is closed */
-        [data-testid="openSidebar"] svg {
+        /* THE ARROW FIX */
+        [data-testid="stSidebarCollapseButton"] svg, [data-testid="openSidebar"] svg {
             fill: white !important;
         }
 
@@ -37,7 +31,6 @@ st.markdown("""
         }
 
         /* FORCE WHITE TEXT for Multiselect Label and Options */
-        /* This makes 'Choose symptoms' and the selected symptoms white */
         .stMultiSelect label p, .stMultiSelect span, .stMultiSelect div {
             color: white !important;
         }
@@ -104,7 +97,6 @@ if st.session_state.page == "home":
 
 # --- VIEW 2: THE DIAGNOSTICS APP ---
 else:
-    # Sidebar back button
     if st.sidebar.button("⬅️ Back to Portal Home"):
         st.session_state.page = "home"
         st.rerun()
@@ -116,6 +108,10 @@ else:
     if st.button("Run AI Diagnosis"):
         loading_placeholder = st.empty()
         with loading_placeholder.container():
+            # FIXED: Properly terminated triple-quoted string below
             st.markdown("""
                 <div style="padding: 30px; text-align: center;">
-                    <svg class="loader-heart" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <svg class="loader-heart" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <p style="color: black; font-weight: 500;">AI is cross
