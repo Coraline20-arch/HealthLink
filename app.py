@@ -3,6 +3,51 @@ import joblib
 import numpy as np
 import time
 
+# Initialize session state so the app remembers if we've "started" or not
+if 'started' not in st.session_state:
+    st.session_state.started = False
+
+# --- 1. THE SPLASH SCREEN ---
+if not st.session_state.started:
+    # Mesooma's CSS for the full-screen effect
+    st.markdown("""
+        <style>
+            .stApp {
+                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .welcome-container {
+                text-align: center;
+                padding: 50px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+        </style>
+        <div class="welcome-container">
+            <h1 style="color: #444; font-size: 3rem;">🩺 HealthLink AI</h1>
+            <p style="color: #555; font-size: 1.2rem;">Advanced Symptom Analysis & Specialist Triage</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.write(" ") # Spacing
+    if st.button("🚀 Begin Medical Scan", use_container_width=True):
+        # When clicked, show the heartbeat loader then switch states
+        with st.spinner("Initializing Neural Networks..."):
+            time.sleep(2) 
+            st.session_state.started = True
+            st.rerun()
+
+# --- 2. THE MAIN APP (Only runs after 'Begin' is clicked) ---
+else:
+    # Put all your original App code (Title, Multiselect, Model logic) here!
+    st.sidebar.button("🏠 Back to Home", on_click=lambda: st.session_state.update({"started": False}))
+    
+    # ... rest of your code ...
+
 # 1. Page Configuration
 st.set_page_config(page_title="HealthLink AI", page_icon="🩺")
 
