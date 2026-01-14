@@ -129,7 +129,7 @@ else:
         prediction = model.predict(input_data.reshape(1, -1))
         result = prediction[0]
 
-        st.balloons()
+
         st.success(f"### Predicted Condition: {result}")
         
         col_m1, col_m2 = st.columns(2)
