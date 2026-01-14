@@ -15,7 +15,7 @@ st.markdown("""
     <style>
         /* Global Background and Base Text (Black) */
         .stApp {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            background: linear-gradient(135deg, #92BCD4 0%, #ffffff 100%);
             font-family: 'Segoe UI', sans-serif;
             color: black !important;
         }
