@@ -1,83 +1,106 @@
 import streamlit as st
 import joblib
 import numpy as np
-import pandas as pd
 import time
 
 # 1. Page Configuration
 st.set_page_config(page_title="HealthLink AI", page_icon="🩺")
 
-# 3. Load the AI files
+# 2. INTEGRATING Mesooma'S CSS (Design & Animations)
+st.markdown("""
+    <style>
+        /* Mesooma's Background & Font */
+        .stApp {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* The Heartbeat Animation */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .loader-heart {
+            width: 80px;
+            height: 80px;
+            fill: #FF5A5F;
+            animation: heartBeat 1.2s infinite ease-in-out;
+            display: block;
+            margin: auto;
+        }
+
+        .loader-text {
+            text-align: center;
+            color: #444;
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 3. Load AI files
 model = joblib.load('disease_model.pkl')
 symptoms_list = joblib.load('symptoms_list.pkl')
 
-# 4. App Header & Image
-st.image("https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1350&q=80")
+# 4. App Header (Mesooma's Welcome Screen style)
 st.title("🩺 HealthLink")
-st.write("HealthLink AI is a machine-learning powered diagnostic tool designed to bridge the gap between symptoms and professional care. This is a science fair project by Chisom and Mesooma Obi.")
-
-# Fancy Accessory: Methodology Expander
-with st.expander("🔬 How does HealthLink AI work?"):
-    st.write("""
-    1. **Data Collection:** Trained on a dataset of 4,900+ health records.
-    2. **Machine Learning:** Uses a Random Forest Algorithm to find patterns in symptoms.
-    3. **Triage:** Categorizes results based on urgency.
-    """)
-
-st.subheader("How to get started:")
-col1, col2, col3 = st.columns(3)
-col1.metric("Step 1", "Select Symptoms")
-col2.metric("Step 2", "Run AI Diagnosis")
-col3.metric("Step 3", "Book Specialist")
+st.markdown("<h3 style='color: #444;'>Ready to analyze your vitals?</h3>", unsafe_allow_html=True)
 
 # 5. Symptom Selection
 options = st.multiselect("What are your symptoms?", list(symptoms_list))
 
-# 6. Diagnosis Logic
-if st.button("Run Diagnosis"):
-    with st.spinner("Wait... HealthLink AI is analyzing your symptoms..."):
-        time.sleep(1.5)  
+# 6. Diagnosis Logic (With Mesooma's Loading Screen)
+if st.button("Begin Scan"): # Renamed to match Mesooma's button
+    
+    # Create a placeholder for the Mesooma's loading screen
+    loading_placeholder = st.empty()
+    
+    with loading_placeholder.container():
+        # This is your Mesooma's SVG Heart + Animation
+        st.markdown("""
+            <div style="padding: 50px;">
+                <svg class="loader-heart" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <div class="loader-text">Syncing Data...</div>
+            </div>
+        """, unsafe_allow_html=True)
         
+        # AI Processing
+        time.sleep(3.5) # Matches her HTML timer
         input_data = np.zeros(len(symptoms_list))
         for s in options:
             index = list(symptoms_list).index(s)
             input_data[index] = 1
-        
         prediction = model.predict(input_data.reshape(1, -1))
         result = prediction[0]
-    
-    # Fancy Accessory: Confidence Metric
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.metric(label="AI Confidence Level", value="94%", delta="High")
-    with col_b:
-        st.metric(label="Analysis Time", value="1.2s", delta="-0.3s")
 
+    # Clear the loading screen
+    loading_placeholder.empty()
+
+    # Show the "Dashboard" (Streamlit Results)
+    st.balloons()
+    st.markdown("<h1 style='color: #2D9CDB;'>Analysis Complete</h1>", unsafe_allow_html=True)
     st.success(f"### Predicted Condition: {result}")
     
-    # Triage Accessory
+    # Triage and Link
     urgent_diseases = ['Heart attack', 'Stroke', 'Malaria', 'Typhoid']
     if result in urgent_diseases:
         st.error("🚨 **High Priority:** Please seek immediate medical attention.")
     else:
         st.info("🟢 **Standard Priority:** Follow up with a specialist.")
 
-    # IMPORTANT: The link and button MUST be indented here to work!
     form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
-    
-    st.info("💡 **Next Step:** To confirm this result with a human doctor, use the portal below.")
     st.link_button("🏥 Connect to Specialist via HealthLink Cloud", form_url, type="primary")
-    
-    # Fancy Accessory: Celebration!
-    st.balloons()
 
-# 7. Specialist Portal (Sidebar)
+# 7. Sidebar
 st.sidebar.title("💡 Health Tips")
-st.sidebar.info("""
-- Drink plenty of water.
-- Track how long symptoms last.
-- If symptoms worsen, call a doctor.
-""")
+st.sidebar.info("- Drink plenty of water.\n- Track symptoms.\n- If symptoms worsen, call a doctor.")
 
 if st.sidebar.checkbox("Specialist Login (Admin Only)"):
     password = st.sidebar.text_input("Enter Code", type="password")
@@ -85,13 +108,6 @@ if st.sidebar.checkbox("Specialist Login (Admin Only)"):
         st.sidebar.success("Access Granted")
         st.sidebar.link_button("View Patient Queue", "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=sharing")
 
-st.sidebar.markdown("---")
-st.sidebar.header("📊 Database Statistics")
-st.sidebar.write(f"**Conditions Covered:** {len(model.classes_)}")
-st.sidebar.write(f"**Symptom Variations:** {len(symptoms_list)}")
-st.sidebar.write("📈 *System Status: Active*")
-
-# 8. Disclaimer
+# Disclaimer
 st.markdown("---")
-st.caption("⚠️ **Disclaimer:** HealthLink AI is a student research project for educational purposes. "
-           "It is not a substitute for professional medical advice.")
+st.caption("⚠️ Disclaimer: Student research project. Not for medical advice.")
