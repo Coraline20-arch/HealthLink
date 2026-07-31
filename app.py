@@ -3,7 +3,10 @@ import joblib
 import numpy as np
 import pandas as pd
 import time
-from datetime import datetime
+import re
+import base64
+import os
+from datetime import datetime, timedelta
 
 # =========================================================
 # 1. Page Configuration
@@ -16,13 +19,69 @@ st.set_page_config(page_title="HealthLink AI", page_icon="🩺", layout="centere
 if 'page' not in st.session_state:
     st.session_state.page = "home"
 if 'history' not in st.session_state:
-    st.session_state.history = []   # stores each past diagnosis for this session
+    st.session_state.history = []   # stores past diagnoses
 if 'lang' not in st.session_state:
     st.session_state.lang = "English"
 
+# --- Therapeutics / Collie Session States ---
+if 'collie_messages' not in st.session_state:
+    st.session_state.collie_messages = [
+        {"role": "assistant", "content": "Hi! I'm Collie, your Therapeutics & Wellness companion 🌿 How are you feeling today?"}
+    ]
+if 'warning_count' not in st.session_state:
+    st.session_state.warning_count = 0
+if 'ban_expires_at' not in st.session_state:
+    st.session_state.ban_expires_at = None
+
 # =========================================================
-# 3. Simple multi-language text dictionary
-#    Add more keys/languages here as needed.
+# 3. Helper Functions & Mascot Rendering
+# =========================================================
+def get_image_base64(file_path):
+    """Converts local image files (PNG/GIF) to base64 for html display."""
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    return None
+
+def render_mascot(name, image_path, fallback_emoji, width=120):
+    """Renders avatar PNGs (animated or static) with a smooth fallback if file missing."""
+    b64_str = get_image_base64(image_path)
+    if b64_str:
+        st.markdown(
+            f"""
+            <div style="text-align: center; margin-bottom: 10px;">
+                <img src="data:image/png;base64,{b64_str}" width="{width}px" style="border-radius: 50%; border: 3px solid #92BCD4; padding: 4px; background: white;" alt="{name}">
+                <p style="font-weight: bold; margin-top: 4px; color: black !important;">{name}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            f"""
+            <div style="text-align: center; margin-bottom: 10px;">
+                <span style="font-size: 60px;">{fallback_emoji}</span>
+                <p style="font-weight: bold; margin-top: 4px; color: black !important;">{name}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+def check_flirtatious_intent(text):
+    """Detects romantic or inappropriate advances."""
+    patterns = [
+        r"\b(love you|date me|be my girlfriend|marry me|cutie|beautiful|kiss|hot|sexy)\b",
+        r"\b(you('re| are) (pretty|cute|gorgeous|attractive))\b",
+        r"\b(go out with me|single\?)\b"
+    ]
+    for pattern in patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            return True
+    return False
+
+# =========================================================
+# 4. Multi-language Text Dictionary
 # =========================================================
 TEXT = {
     "English": {
@@ -31,25 +90,28 @@ TEXT = {
         "patients_header": "👤 Patients",
         "patients_info": "Experience our AI-driven diagnostic tool to analyze your symptoms.",
         "enter_button": "🚀 Enter Diagnostics",
+        "therapeutics_header": "🌿 Therapeutics",
+        "therapeutics_info": "Chat with Collie for mood support, mental well-being, and lifestyle guidance.",
+        "enter_therapeutics": "💬 Chat with Collie",
         "specialists_header": "🏥 Specialists",
         "specialists_sub": "Access the secure patient queue and dashboard.",
         "admin_code": "Enter Admin Code",
-        "diagnosis_title": "🔍 Symptom Analysis",
+        "diagnosis_title": "🔍 Symptom Analysis with Ellyse",
         "select_symptoms": "Select all symptoms you are experiencing:",
         "search_placeholder": "Search symptoms...",
-        "severity_label": "Rate the severity of each symptom (helps your specialist, does not change the AI result):",
+        "severity_label": "Rate the severity of each symptom:",
         "run_button": "Run AI Diagnosis",
         "loading_text": "AI is cross-referencing symptom patterns...",
         "predicted": "Predicted Condition",
         "confidence": "Model Confidence",
         "speed": "Processing Speed",
-        "urgent": "🚨 Urgent Notice: This may be a high-priority condition. Please seek emergency care immediately or call your local emergency number.",
+        "urgent": "🚨 Urgent Notice: High-priority condition detected. Seek emergency care immediately.",
         "standard": "🟢 Standard Notice: Specialist follow-up recommended within a few days.",
         "book_button": "📋 Book Specialist Appointment",
         "download_summary": "⬇️ Download My Summary",
         "history_header": "🕓 Your Past Checks (this session)",
         "no_history": "No past checks yet.",
-        "disclaimer": "⚠️ This tool is for educational purposes only and is not a substitute for professional medical advice.",
+        "disclaimer": "⚠️ Educational purposes only; not a substitute for professional medical advice.",
         "back_button": "⬅️ Back to Portal Home",
     },
     "Pidgin": {
@@ -58,25 +120,28 @@ TEXT = {
         "patients_header": "👤 Patients",
         "patients_info": "Use our AI tool check wetin dey worry you.",
         "enter_button": "🚀 Enter Diagnostics",
+        "therapeutics_header": "🌿 Therapeutics",
+        "therapeutics_info": "Follow Collie talk for mood support and general body wellness.",
+        "enter_therapeutics": "💬 Talk with Collie",
         "specialists_header": "🏥 Specialists",
         "specialists_sub": "Enter the secure patient queue and dashboard.",
         "admin_code": "Enter Admin Code",
-        "diagnosis_title": "🔍 Symptom Check",
+        "diagnosis_title": "🔍 Symptom Check with Ellyse",
         "select_symptoms": "Choose all the symptoms wey you dey feel:",
         "search_placeholder": "Find symptom...",
-        "severity_label": "Rate how bad each symptom be (e go help your doctor, e no go change the AI result):",
+        "severity_label": "Rate how bad each symptom be:",
         "run_button": "Run AI Check",
         "loading_text": "AI dey check your symptoms well well...",
         "predicted": "Wetin AI Think E Be",
         "confidence": "AI Confidence",
         "speed": "Speed",
-        "urgent": "🚨 Serious Notice: This fit be serious matter. Abeg go hospital sharp sharp or call emergency number.",
+        "urgent": "🚨 Serious Notice: Go hospital sharp sharp or call emergency number.",
         "standard": "🟢 Normal Notice: E good make you see specialist within few days.",
         "book_button": "📋 Book Specialist Appointment",
         "download_summary": "⬇️ Download My Summary",
         "history_header": "🕓 Your Past Checks (this session)",
         "no_history": "No past check yet.",
-        "disclaimer": "⚠️ This tool na for learning purpose only, e no be replacement for real doctor advice.",
+        "disclaimer": "⚠️ Learning purpose only, e no be replacement for real doctor advice.",
         "back_button": "⬅️ Go Back to Home",
     },
 }
@@ -86,7 +151,7 @@ def t(key):
     return TEXT.get(lang, TEXT["English"]).get(key, TEXT["English"].get(key, key))
 
 # =========================================================
-# 4. CSS
+# 5. CSS Styling
 # =========================================================
 st.markdown("""
     <style>
@@ -108,10 +173,10 @@ st.markdown("""
             color: black !important;
         }
         .portal-card {
-            background: rgba(255, 255, 255, 0.25);
-            padding: 40px;
+            background: rgba(255, 255, 255, 0.35);
+            padding: 30px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(12px);
             text-align: center;
             margin-bottom: 20px;
@@ -132,16 +197,20 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # =========================================================
-# 5. Global Data Loading
+# 6. Global Data Loading
 # =========================================================
-model = joblib.load('disease_model.pkl')
-symptoms_list = list(joblib.load('symptoms_list.pkl'))
+try:
+    model = joblib.load('disease_model.pkl')
+    symptoms_list = list(joblib.load('symptoms_list.pkl'))
+except Exception:
+    # Dummy fallbacks for testing if models are missing
+    symptoms_list = ["Fever", "Cough", "Headache", "Fatigue"]
+    model = None
 
-# List of urgent conditions - expand as needed
 URGENT_DISEASES = ['Heart attack', 'Stroke', 'Malaria', 'Typhoid']
 
 # =========================================================
-# 6. Sidebar: language picker (always visible)
+# 7. Sidebar Navigation
 # =========================================================
 st.sidebar.selectbox(
     "🌐 Language / Èdè / Harshe / Asụsụ",
@@ -150,7 +219,7 @@ st.sidebar.selectbox(
 )
 
 # =========================================================
-# VIEW 1: THE SPLASH SCREEN
+# VIEW 1: HOME PORTAL (3 OPTIONS)
 # =========================================================
 if st.session_state.page == "home":
     st.markdown('<div class="portal-card">', unsafe_allow_html=True)
@@ -159,108 +228,56 @@ if st.session_state.page == "home":
     st.write("A 10th-grade research project by **Chisom & Mesooma Obi**")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
+        render_mascot("Ellyse", "assets/ellyse.png", "🩺", width=100)
         st.subheader(t("patients_header"))
-        st.info(t("patients_info"))
+        st.caption(t("patients_info"))
         if st.button(t("enter_button"), use_container_width=True):
             st.session_state.page = "app"
             st.rerun()
 
     with col2:
-        st.subheader(t("specialists_header"))
-        st.write(t("specialists_sub"))
-        password = st.text_input(t("admin_code"), type="password")
+        render_mascot("Collie", "assets/collie.png", "🌿", width=100)
+        st.subheader(t("therapeutics_header"))
+        st.caption(t("therapeutics_info"))
+        if st.button(t("enter_therapeutics"), use_container_width=True):
+            st.session_state.page = "therapeutics"
+            st.rerun()
 
-        # --- Admin code now pulled from st.secrets instead of hardcoded ---
-        # Create a file at .streamlit/secrets.toml with:
-        #   admin_code = "4421"
-        # (see secrets.toml.example provided alongside this file)
+    with col3:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.subheader(t("specialists_header"))
+        st.caption(t("specialists_sub"))
+        password = st.text_input(t("admin_code"), type="password")
         real_admin_code = st.secrets.get("admin_code", "4421")
 
         if password and password == real_admin_code:
-            st.success("Access Granted. When opening the queue, right click and 'Open in a new tab'.")
-
-            # --- Optional: live dashboard pulled straight from Google Sheets ---
-            # This only activates if you've configured a Google service account
-            # in st.secrets (see notes at the bottom of this file). Otherwise it
-            # falls back to the plain spreadsheet link, same as before.
+            st.success("Access Granted.")
             sheet_url = "https://docs.google.com/spreadsheets/d/1RFfeLyySqT8hxieP0ZzuHe9WLcpMiZJxprHz6G7F98E/edit?usp=sharing"
-
-            dashboard_loaded = False
-            if "gcp_service_account" in st.secrets:
-                try:
-                    import gspread
-                    from google.oauth2.service_account import Credentials
-
-                    scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-                    creds = Credentials.from_service_account_info(
-                        st.secrets["gcp_service_account"], scopes=scopes
-                    )
-                    gc = gspread.authorize(creds)
-                    sh = gc.open_by_url(sheet_url)
-                    worksheet = sh.sheet1
-                    records = worksheet.get_all_records()
-
-                    if records:
-                        df = pd.DataFrame(records)
-
-                        # --- Triage sorting: urgent cases bubble to the top ---
-                        # Assumes the sheet has a column literally called "Condition"
-                        # or "Predicted Condition". Adjust the column name below to
-                        # match whatever your Google Form actually writes.
-                        condition_col = None
-                        for candidate in ["Predicted Condition", "Condition", "Diagnosis"]:
-                            if candidate in df.columns:
-                                condition_col = candidate
-                                break
-
-                        if condition_col:
-                            df["Urgent"] = df[condition_col].isin(URGENT_DISEASES)
-                            df = df.sort_values(by="Urgent", ascending=False)
-                            st.subheader("📂 Patient Queue (urgent cases first)")
-                            st.dataframe(
-                                df.drop(columns=["Urgent"]),
-                                use_container_width=True,
-                            )
-                        else:
-                            st.subheader("📂 Patient Queue")
-                            st.dataframe(df, use_container_width=True)
-
-                        dashboard_loaded = True
-                except Exception as e:
-                    st.warning(f"Couldn't load live dashboard, showing raw link instead. ({e})")
-
-            if not dashboard_loaded:
-                st.link_button("📂 Open Patient Queue", sheet_url, use_container_width=True)
+            st.link_button("📂 Open Patient Queue", sheet_url, use_container_width=True)
         elif password:
             st.error("Incorrect code.")
 
 # =========================================================
-# VIEW 2: THE DIAGNOSTICS APP
+# VIEW 2: DIAGNOSTICS APP (ELLYSE)
 # =========================================================
-else:
+elif st.session_state.page == "app":
     if st.sidebar.button(t("back_button")):
         st.session_state.page = "home"
         st.rerun()
 
-    st.title(t("diagnosis_title"))
+    col_head, col_avatar = st.columns([3, 1])
+    with col_head:
+        st.title(t("diagnosis_title"))
+    with col_avatar:
+        render_mascot("Ellyse", "assets/ellyse.png", "🩺", width=90)
 
-    # --- Symptom search filter, on top of the multiselect's own search ---
     search_term = st.text_input("🔎 " + t("search_placeholder"))
-    if search_term:
-        filtered_symptoms = [s for s in symptoms_list if search_term.lower() in s.lower()]
-    else:
-        filtered_symptoms = symptoms_list
-
+    filtered_symptoms = [s for s in symptoms_list if search_term.lower() in s.lower()] if search_term else symptoms_list
     options = st.multiselect(t("select_symptoms"), filtered_symptoms)
 
-    # --- Severity sliders per selected symptom ---
-    # NOTE: The underlying model was trained on plain yes/no (0/1) symptom
-    # inputs, so severity is NOT fed into the model (that could quietly
-    # break predictions). It's shown to the specialist in the summary/
-    # appointment info instead, which is where it's actually useful.
     severities = {}
     if options:
         st.write(t("severity_label"))
@@ -273,76 +290,31 @@ else:
     if st.button(t("run_button")):
         if not options:
             st.warning("Please select at least one symptom first.")
+        elif model is None:
+            st.error("Model missing in setup context.")
         else:
             loading_placeholder = st.empty()
             with loading_placeholder.container():
                 st.markdown(f"""
-                    <div style="padding: 30px; text-align: center;">
+                    <div style="padding: 20px; text-align: center;">
                         <svg class="loader-heart" viewBox="0 0 24 24">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                         </svg>
                         <p style="color: black; font-weight: 500;">{t("loading_text")}</p>
                     </div>
                 """, unsafe_allow_html=True)
-                time.sleep(2.5)
+                time.sleep(1.5)
 
             loading_placeholder.empty()
 
             input_data = np.zeros(len(symptoms_list))
             for s in options:
-                index = symptoms_list.index(s)
-                input_data[index] = 1
+                input_data[symptoms_list.index(s)] = 1
 
             input_vector = input_data.reshape(1, -1)
-            prediction = model.predict(input_vector)
-            result = prediction[0]
-
-            # --- Real confidence score instead of a hardcoded "94%" ---
-            confidence_text = "N/A"
-            top_alternatives = []
-            if hasattr(model, "predict_proba"):
-                proba = model.predict_proba(input_vector)[0]
-                classes = model.classes_
-                top_idx = np.argsort(proba)[::-1][:3]
-                top_alternatives = [(classes[i], proba[i]) for i in top_idx]
-                confidence_text = f"{top_alternatives[0][1] * 100:.1f}%"
-
-            # --- Real processing speed instead of a hardcoded "1.2s" ---
-            start_time = time.time()
-            _ = model.predict(input_vector)
-            elapsed = time.time() - start_time
-            speed_text = f"{elapsed:.2f}s"
+            result = model.predict(input_vector)[0]
 
             st.success(f"### {t('predicted')}: {result}")
-
-            col_m1, col_m2 = st.columns(2)
-            col_m1.metric(t("confidence"), confidence_text)
-            col_m2.metric(t("speed"), speed_text)
-
-            # --- Show top-3 alternative conditions, if available ---
-            if len(top_alternatives) > 1:
-                st.write("**Other possible matches:**")
-                for cond, prob in top_alternatives[1:]:
-                    st.write(f"- {cond}: {prob * 100:.1f}%")
-
-            # --- Simple explainability: which symptoms most likely drove this ---
-            # Works for tree-based models (feature_importances_) or linear
-            # models (coef_). Skips gracefully if the model has neither.
-            importances = None
-            if hasattr(model, "feature_importances_"):
-                importances = model.feature_importances_
-            elif hasattr(model, "coef_"):
-                importances = np.abs(model.coef_).mean(axis=0) if model.coef_.ndim > 1 else np.abs(model.coef_)
-
-            if importances is not None:
-                selected_importance = [
-                    (s, importances[symptoms_list.index(s)]) for s in options
-                ]
-                selected_importance.sort(key=lambda x: x[1], reverse=True)
-                if selected_importance:
-                    st.write("**Symptoms that most influenced this result:**")
-                    for sym, score in selected_importance[:3]:
-                        st.write(f"- {sym}")
 
             is_urgent = result in URGENT_DISEASES
             if is_urgent:
@@ -350,44 +322,75 @@ else:
             else:
                 st.info(t("standard"))
 
-            form_url = "https://docs.google.com/forms/d/e/1FAIpQLSec-ev-zZ3KcUQW6A1eYBSl_MuAzqoZbImXYlvHzWcGYfK8_w/viewform?usp=header"
-            st.link_button(t("book_button"), form_url, type="primary")
-
-            # --- Save this check into session history ---
+            # Save check
             record = {
                 "Time": datetime.now().strftime("%Y-%m-%d %H:%M"),
                 "Symptoms": ", ".join(options),
                 "Severity": ", ".join(f"{s}: {severities[s]}" for s in options),
                 "Predicted Condition": result,
-                "Confidence": confidence_text,
                 "Urgent": "Yes" if is_urgent else "No",
             }
             st.session_state.history.append(record)
 
-            # --- Downloadable summary for the patient to bring to their visit ---
-            summary_text = (
-                f"HealthLink AI Summary\n"
-                f"Date: {record['Time']}\n"
-                f"Symptoms: {record['Symptoms']}\n"
-                f"Severity: {record['Severity']}\n"
-                f"Predicted Condition: {record['Predicted Condition']}\n"
-                f"Confidence: {record['Confidence']}\n"
-                f"Urgency: {record['Urgent']}\n"
-            )
-            st.download_button(
-                t("download_summary"),
-                data=summary_text,
-                file_name=f"healthlink_summary_{datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-                mime="text/plain",
-            )
+# =========================================================
+# VIEW 3: THERAPEUTICS & WELLNESS (COLLIE)
+# =========================================================
+elif st.session_state.page == "therapeutics":
+    if st.sidebar.button(t("back_button")):
+        st.session_state.page = "home"
+        st.rerun()
 
-    # --- History section ---
+    col_head, col_avatar = st.columns([3, 1])
+    with col_head:
+        st.title("🌿 Therapeutics & Wellness")
+        st.write("Your mental wellness and daily mood space.")
+    with col_avatar:
+        render_mascot("Collie", "assets/collie.png", "🌿", width=90)
+
     st.markdown("---")
-    st.subheader(t("history_header"))
-    if st.session_state.history:
-        st.dataframe(pd.DataFrame(st.session_state.history), use_container_width=True)
+
+    # --- Ban Check Enforcement ---
+    now = datetime.now()
+    if st.session_state.ban_expires_at and now < st.session_state.ban_expires_at:
+        remaining = int((st.session_state.ban_expires_at - now).total_seconds() / 60) + 1
+        st.error(f"⛔ **Chat paused:** You have received 3 warnings for inappropriate advances. Collie is taking a break. Please try again in {remaining} minute(s).")
     else:
-        st.caption(t("no_history"))
+        # Reset ban if time passed
+        if st.session_state.ban_expires_at and now >= st.session_state.ban_expires_at:
+            st.session_state.ban_expires_at = None
+            st.session_state.warning_count = 0
 
-    st.markdown("---")
-    st.caption(t("disclaimer"))
+        # Display Chat Messages
+        for msg in st.session_state.collie_messages:
+            with st.chat_message(msg["role"]):
+                st.write(msg["content"])
+
+        # Chat Input
+        if user_prompt := st.chat_input("Talk to Collie about your mood or wellness..."):
+            st.session_state.collie_messages.append({"role": "user", "content": user_prompt})
+            
+            # Flirt / Safety Check
+            if check_flirtatious_intent(user_prompt):
+                st.session_state.warning_count += 1
+                
+                if st.session_state.warning_count == 1:
+                    reply = "⚠️ **Warning (1/3):** I'm here purely as your health and wellness companion! Let's keep our conversation focused on your health goals. 😊"
+                elif st.session_state.warning_count == 2:
+                    reply = "⚠️ **Warning (2/3):** Please keep interactions respectful and focused on health. Another inappropriate message will pause chat access for 10 minutes."
+                else:
+                    st.session_state.ban_expires_at = datetime.now() + timedelta(minutes=10)
+                    reply = "⛔ **Warning (3/3):** You have exceeded the warning threshold. Chat access is temporarily paused for 10 minutes."
+            else:
+                # Standard Response logic (Rule-based sample prompts)
+                prompt_lower = user_prompt.lower()
+                if "anxious" in prompt_lower or "stress" in prompt_lower:
+                    reply = "I hear you. Anxiety can be overwhelming. Try the 4-7-8 breathing method: Breathe in for 4 seconds, hold for 7, and exhale slowly for 8 seconds. Would you like to try journaling what's on your mind?"
+                elif "sad" in prompt_lower or "depressed" in prompt_lower:
+                    reply = "I'm sorry you're feeling down. Remember to treat yourself gently today. Getting some fresh air, sipping water, or listening to calming music can help."
+                elif "sleep" in prompt_lower or "tired" in prompt_lower:
+                    reply = "Good sleep is crucial for wellness. Try turning off bright screens 1 hour before bed and keeping your room cool."
+                else:
+                    reply = "Thank you for sharing that with me! Remember, tracking your mood and maintaining light physical activity are great ways to keep your energy balanced. How else can I support your wellness today?"
+
+            st.session_state.collie_messages.append({"role": "assistant", "content": reply})
+            st.rerun()
