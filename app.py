@@ -68,6 +68,36 @@ def render_mascot(name, image_path, fallback_emoji, width=120):
             unsafe_allow_html=True
         )
 
+def show_splash_screen(mascot_name, image_path, fallback_emoji, message, bg_color="#92BCD4"):
+    """Displays a full portal transition splash screen before loading a view."""
+    splash_placeholder = st.empty()
+    b64_str = get_image_base64(image_path)
+    
+    avatar_html = (
+        f'<img src="data:image/png;base64,{b64_str}" width="120px" style="border-radius: 50%; background: white; padding: 5px;" class="splash-pulse">'
+        if b64_str else f'<span style="font-size: 80px;" class="splash-pulse">{fallback_emoji}</span>'
+    )
+    
+    with splash_placeholder.container():
+        st.markdown(f"""
+            <div style="
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: linear-gradient(135deg, {bg_color} 0%, #ffffff 100%);
+                z-index: 99999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;">
+                {avatar_html}
+                <h2 style="color: black !important; margin-top: 20px;">Connecting to {mascot_name}...</h2>
+                <p style="color: #333 !important; font-size: 18px;">{message}</p>
+            </div>
+        """, unsafe_allow_html=True)
+        time.sleep(1.8)
+    splash_placeholder.empty()
+
 def check_flirtatious_intent(text):
     """Detects romantic or inappropriate advances."""
     patterns = [
@@ -181,6 +211,15 @@ st.markdown("""
             text-align: center;
             margin-bottom: 20px;
         }
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .splash-pulse {
+            animation: pulse 1.5s infinite ease-in-out;
+            display: inline-block;
+        }
         @keyframes heartBeat {
             0% { transform: scale(1); }
             15% { transform: scale(1.1); }
@@ -203,7 +242,6 @@ try:
     model = joblib.load('disease_model.pkl')
     symptoms_list = list(joblib.load('symptoms_list.pkl'))
 except Exception:
-    # Dummy fallbacks for testing if models are missing
     symptoms_list = ["Fever", "Cough", "Headache", "Fatigue"]
     model = None
 
@@ -235,6 +273,7 @@ if st.session_state.page == "home":
         st.subheader(t("patients_header"))
         st.caption(t("patients_info"))
         if st.button(t("enter_button"), use_container_width=True):
+            show_splash_screen("Ellyse", "assets/ellyse.png", "🩺", "Preparing Clinical Diagnostic Engine...", bg_color="#92BCD4")
             st.session_state.page = "app"
             st.rerun()
 
@@ -243,6 +282,7 @@ if st.session_state.page == "home":
         st.subheader(t("therapeutics_header"))
         st.caption(t("therapeutics_info"))
         if st.button(t("enter_therapeutics"), use_container_width=True):
+            show_splash_screen("Collie", "assets/collie.png", "🌿", "Opening Your Mindful Space...", bg_color="#B8E0D2")
             st.session_state.page = "therapeutics"
             st.rerun()
 
@@ -322,7 +362,6 @@ elif st.session_state.page == "app":
             else:
                 st.info(t("standard"))
 
-            # Save check
             record = {
                 "Time": datetime.now().strftime("%Y-%m-%d %H:%M"),
                 "Symptoms": ", ".join(options),
@@ -349,27 +388,22 @@ elif st.session_state.page == "therapeutics":
 
     st.markdown("---")
 
-    # --- Ban Check Enforcement ---
     now = datetime.now()
     if st.session_state.ban_expires_at and now < st.session_state.ban_expires_at:
         remaining = int((st.session_state.ban_expires_at - now).total_seconds() / 60) + 1
         st.error(f"⛔ **Chat paused:** You have received 3 warnings for inappropriate advances. Collie is taking a break. Please try again in {remaining} minute(s).")
     else:
-        # Reset ban if time passed
         if st.session_state.ban_expires_at and now >= st.session_state.ban_expires_at:
             st.session_state.ban_expires_at = None
             st.session_state.warning_count = 0
 
-        # Display Chat Messages
         for msg in st.session_state.collie_messages:
             with st.chat_message(msg["role"]):
                 st.write(msg["content"])
 
-        # Chat Input
         if user_prompt := st.chat_input("Talk to Collie about your mood or wellness..."):
             st.session_state.collie_messages.append({"role": "user", "content": user_prompt})
             
-            # Flirt / Safety Check
             if check_flirtatious_intent(user_prompt):
                 st.session_state.warning_count += 1
                 
@@ -381,7 +415,6 @@ elif st.session_state.page == "therapeutics":
                     st.session_state.ban_expires_at = datetime.now() + timedelta(minutes=10)
                     reply = "⛔ **Warning (3/3):** You have exceeded the warning threshold. Chat access is temporarily paused for 10 minutes."
             else:
-                # Standard Response logic (Rule-based sample prompts)
                 prompt_lower = user_prompt.lower()
                 if "anxious" in prompt_lower or "stress" in prompt_lower:
                     reply = "I hear you. Anxiety can be overwhelming. Try the 4-7-8 breathing method: Breathe in for 4 seconds, hold for 7, and exhale slowly for 8 seconds. Would you like to try journaling what's on your mind?"
